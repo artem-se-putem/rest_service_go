@@ -9,4 +9,4 @@ func Err(err error) slog.Attr {
 		Key: "error",
 		Value: slog.StringValue(err.Error()),
 	}
-}	
+}
