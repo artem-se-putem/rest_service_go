@@ -8,42 +8,43 @@ import (
 	"syscall"
 	"time"
 
-	"fmt"
-	"rest_service_go/internal/config"
-	"log/slog"
-	"rest_service_go/internal/lib/logger/sl"
-	"rest_service_go/internal/storage/sqlite"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"log/slog"
+
+	"rest_service_go/internal/config"
+	"rest_service_go/internal/http-server/handlers/redirect"
+	"rest_service_go/internal/http-server/handlers/url/save"
 	mwLogger "rest_service_go/internal/http-server/middleware/logger"
+	"rest_service_go/internal/lib/logger/handlers/slogpretty"
+	"rest_service_go/internal/lib/logger/sl"
+	"rest_service_go/internal/storage/sqlite"
 )
 
 const (
 	envLocal = "local"
-	envDev = "dev"
-	envProd = "prod"
+	envDev   = "dev"
+	envProd  = "prod"
 )
 
 func main() {
-	// TODO: init config: cleanenv
 	cfg := config.MustLoad()
-	fmt.Println(cfg)
 
-	// TODO: init logger: slog
 	log := setupLogger(cfg.Env)
-	log.Info("starting rest_service_go", slog.String("env", cfg.Env)) // Чтобы убедиться, что это dev
+
+	log.Info(
+		"starting rest_service_go",
+		slog.String("env", cfg.Env),
+		slog.String("version", "123"),
+	)
 	log.Debug("debug messages are enabled")
 
-	// TODO: init storage: sqlite (могу заменить на postgres самостоятельно)
 	storage, err := sqlite.New(cfg.StoragePath)
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
 
-	_ = storage
-
-	// TODO: init router: chi, "chi render"
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -52,9 +53,16 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("rest_service_go", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
 
-	// TODO: run server:
+		r.Post("/", save.New(log, storage))
+		// TODO: add DELETE /url/{id}
+	})
+
+	router.Get("/{alias}", redirect.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
@@ -68,6 +76,12 @@ func main() {
 		WriteTimeout: cfg.HTTPServer.Timeout,
 		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Error("failed to start server")
+		}
+	}()
 
 	log.Info("server started")
 
@@ -87,24 +101,39 @@ func main() {
 	// TODO: close storage
 
 	log.Info("server stopped")
-
 }
 
-func setupLogger(env string) *slog.Logger{
+func setupLogger(env string) *slog.Logger {
 	var log *slog.Logger
+
 	switch env {
 	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-	)
+		log = setupPrettySlog()
 	case envDev:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-	)
+		)
 	case envProd:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-	)
-
+		)
+	default: // If env config is invalid, set prod settings by default due to security
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
 	}
+
 	return log
+}
+
+func setupPrettySlog() *slog.Logger {
+	opts := slogpretty.PrettyHandlerOptions{
+		SlogOpts: &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
+	}
+
+	handler := opts.NewPrettyHandler(os.Stdout)
+
+	return slog.New(handler)
 }

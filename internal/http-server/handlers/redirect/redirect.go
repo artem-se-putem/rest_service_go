@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	resp "rest_service_go/internal/lib/api/response"
 	"rest_service_go/internal/lib/logger/sl"
