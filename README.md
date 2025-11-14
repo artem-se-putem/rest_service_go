@@ -11,3 +11,6 @@ curl -X POST http://localhost:8081/url -H "Content-Type: application/json" -u "a
 
 http://localhost:8081/test_alias
 <a href="https://google.com">Found</a>.
+
+# 
+ssh -i rest_service_go  -o StrictHostKeyChecking=no root@178.72.149.152
