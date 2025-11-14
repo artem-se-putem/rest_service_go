@@ -1,6 +1,10 @@
 # rest_service_go
 Link-shortener REST service on golang.
 
+# Start service:
+$env:CONFIG_PATH="C:\deals\rest_service_go\config\local.yaml" 
+go run .\cmd\url-shortener\main.go
+
 # TEST-CASES
 curl -X POST http://localhost:8081/url -H "Content-Type: application/json" -u "artem:123" -d "{\"url\": \"https://google2.com\", \"alias\": \"test_alias2\"}"
 {"status":"OK","alias":"test_alias2"}

@@ -1,4 +1,4 @@
- package save
+package delete
 
 import (
 	"errors"
@@ -12,38 +12,37 @@ import (
 
 	resp "rest_service_go/internal/lib/api/response"
 	"rest_service_go/internal/lib/logger/sl"
-	"rest_service_go/internal/lib/random"
 	"rest_service_go/internal/storage"
 )
 
-type SaveRequest struct {
+type DeleteRequest struct {
 	URL   string `json:"url" validate:"required,url"`
 	Alias string `json:"alias,omitempty"`
 }
 
-type SaveResponse struct {
+type DeleteResponse struct {
 	resp.Response
 	Alias string `json:"alias,omitempty"`
 }
 
-// TODO: move to config if needed
+// // TODO: move to config if needed
 const aliasLength = 6
 
-//go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=URLSaver
-type URLSaver interface {
-	SaveURL(urlToSave string, alias string) (int64, error)
+//go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=URLDeleter
+type URLDeleter interface {
+	DeleteURL(alias string) (error)
 }
 
-func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
+func New(log *slog.Logger, urlDeleter URLDeleter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.url.save.New"
+		const op = "handlers.url.delete.New"
 
 		log := log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		var req SaveRequest
+		var req DeleteRequest
 
 		err := render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
@@ -75,36 +74,32 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			return
 		}
 
-		// Если alias пустой, то все равно сохраняем url, но с рандомный alias
 		alias := req.Alias
-		if alias == "" {
-			alias = random.NewRandomString(aliasLength)
-		}
 
-		id, err := urlSaver.SaveURL(req.URL, alias)
-		if errors.Is(err, storage.ErrURLExists) {
-			log.Info("url already exists", slog.String("url", req.URL))
+		err = urlDeleter.DeleteURL(alias)
+		if errors.Is(err, storage.ErrAliasNotFound) {
+			log.Info("url with alias to delete not found", slog.String("alias", req.Alias))
 
-			render.JSON(w, r, resp.Error("url already exists"))
+			render.JSON(w, r, resp.Error("alias to delete not found"))
 
 			return
 		}
 		if err != nil {
-			log.Error("failed to add url", sl.Err(err))
+			log.Error("failed to delete url", sl.Err(err))
 
-			render.JSON(w, r, resp.Error("failed to add url"))
+			render.JSON(w, r, resp.Error("failed to delete url by alias"))
 
 			return
 		}
 
-		log.Info("url added", slog.Int64("id", id))
+		log.Info("url deleted", slog.String("alias", alias))
 
 		responseOK(w, r, alias)
 	}
 }
 
 func responseOK(w http.ResponseWriter, r *http.Request, alias string) {
-	render.JSON(w, r, SaveResponse{
+	render.JSON(w, r, DeleteResponse{
 		Response: resp.OK(),
 		Alias:    alias,
 	})

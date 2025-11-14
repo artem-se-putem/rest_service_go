@@ -84,7 +84,7 @@ func TestSaveHandler(t *testing.T) {
 
 			body := rr.Body.String()
 
-			var resp save.Response
+			var resp save.SaveResponse
 
 			require.NoError(t, json.Unmarshal([]byte(body), &resp))
 
