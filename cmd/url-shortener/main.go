@@ -59,6 +59,7 @@ func main() {
 		}))
 
 		r.Post("/", save.New(log, storage))
+		r.Post("/delete/{alias}", save.New(log, storage))
 		// TODO: add DELETE /url/{id}
 	})
 

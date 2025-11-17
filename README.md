@@ -13,4 +13,4 @@ http://localhost:8081/test_alias
 <a href="https://google.com">Found</a>.
 
 # 
-ssh -i rest_service_go  -o StrictHostKeyChecking=no root@178.72.149.152
+ssh -i C:/Users/xtr1k/.ssh/rest_service_go -o StrictHostKeyChecking=no root@178.72.149.152

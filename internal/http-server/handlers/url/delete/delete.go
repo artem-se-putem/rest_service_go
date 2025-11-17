@@ -16,19 +16,15 @@ import (
 )
 
 type DeleteRequest struct {
-	URL   string `json:"url" validate:"required,url"`
-	Alias string `json:"alias,omitempty"`
+	Alias string `json:"alias" validate:"required"`
 }
 
 type DeleteResponse struct {
-	resp.Response
-	Alias string `json:"alias,omitempty"`
+	resp.Response // Цифровой статус 200, 300...
+	Alias string `json:"alias"`
 }
 
-// // TODO: move to config if needed
-const aliasLength = 6
-
-//go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=URLDeleter
+//go:generate go run github.com/vektra/mockery/v2@latest --name=URLDeleter
 type URLDeleter interface {
 	DeleteURL(alias string) (error)
 }
