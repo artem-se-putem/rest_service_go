@@ -4,10 +4,11 @@ import (
 	"errors"
 	"net/http"
 
+	"log/slog"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"log/slog"
 
 	resp "rest_service_go/internal/lib/api/response"
 	"rest_service_go/internal/lib/logger/sl"

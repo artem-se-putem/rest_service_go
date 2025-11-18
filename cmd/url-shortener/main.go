@@ -8,9 +8,10 @@ import (
 	"syscall"
 	"time"
 
+	"log/slog"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"log/slog"
 
 	"rest_service_go/internal/config"
 	"rest_service_go/internal/http-server/handlers/redirect"

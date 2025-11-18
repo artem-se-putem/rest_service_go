@@ -16,22 +16,22 @@ import (
 )
 
 func TestDeleteHandler(t *testing.T) {
-	cases := []struct{
-		name string
-		url string
+	cases := []struct {
+		name      string
+		url       string
 		alias     string
 		respError string
 		mockError error
 	}{
 		{
 			name:  "Success",
-			url: "https://youtube123.com",
+			url:   "https://youtube123.com",
 			alias: "test_alias",
 		},
 		{
-			name: "Empty alias", 
-			url: "https://qwe.com",
-			alias: "",
+			name:      "Empty alias",
+			url:       "https://qwe.com",
+			alias:     "",
 			respError: "field Alias is a required field",
 		},
 	}

@@ -6,8 +6,9 @@ import (
 	"io"
 	stdLog "log"
 
-	"github.com/fatih/color"
 	"log/slog"
+
+	"github.com/fatih/color"
 )
 
 type PrettyHandlerOptions struct {
@@ -15,7 +16,7 @@ type PrettyHandlerOptions struct {
 }
 
 type PrettyHandler struct {
-	opts PrettyHandlerOptions
+	// opts PrettyHandlerOptions
 	slog.Handler
 	l     *stdLog.Logger
 	attrs []slog.Attr

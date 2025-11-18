@@ -102,16 +102,15 @@ func (s *Storage) DeleteURL(alias string) error {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-    // Проверяем, что хотя бы одна строка была удалена
-    rowsAffected, err := res.RowsAffected()
-    if err != nil {
-        return fmt.Errorf("%s: get rows affected: %w", op, err)
-    }
+	// Проверяем, что хотя бы одна строка была удалена
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: get rows affected: %w", op, err)
+	}
 
-    if rowsAffected == 0 {
-        return fmt.Errorf("%s: %w", op, storage.ErrAliasNotFound)
-    }
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: %w", op, storage.ErrAliasNotFound)
+	}
 
-	
 	return nil
 }

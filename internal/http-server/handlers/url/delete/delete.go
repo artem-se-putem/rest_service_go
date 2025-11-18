@@ -5,10 +5,11 @@ import (
 	"io"
 	"net/http"
 
+	"log/slog"
+
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
-	"log/slog"
 
 	resp "rest_service_go/internal/lib/api/response"
 	"rest_service_go/internal/lib/logger/sl"
@@ -20,13 +21,13 @@ type DeleteRequest struct {
 }
 
 type DeleteResponse struct {
-	resp.Response // Цифровой статус 200, 300...
-	Alias string `json:"alias"`
+	resp.Response        // Цифровой статус 200, 300...
+	Alias         string `json:"alias"`
 }
 
 //go:generate go run github.com/vektra/mockery/v2@latest --name=URLDeleter
 type URLDeleter interface {
-	DeleteURL(alias string) (error)
+	DeleteURL(alias string) error
 }
 
 func New(log *slog.Logger, urlDeleter URLDeleter) http.HandlerFunc {
